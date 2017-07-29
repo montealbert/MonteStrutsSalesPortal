@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/bootstrap-theme.min.css" rel="stylesheet" />
+</head>
+<body>
+    <nav class="breadcrumb">
+        <a class="breadcrumb-item" href="Index.html">Home</a>
+        <span class="breadcrumb-item active">View Cart</span>
+    </nav>
+    <h1 class="bg-primary text-center">Monte's Sales portal for Struts</h1>
+    <p class="bg-danger text-center">This is just a test site. All the images are property of their owners.</p>
+    <h2 class="bg-info text-center">View Cart</h2>
+    <div class="row bg-info" id="productsDiv"></div>
+    <p class="text-center bg-info">
+        <button class="btn btn-primary" onclick="window.location.href = 'Index.html';">Continue Shopping</button>
+        <button class="btn btn-primary">Checkout</button>
+    </p>
+    <script src="Scripts/jquery-3.1.1.min.js"></script>
+    <script src="Scripts/jquery.cookie.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        var currentItems;
+        function itemQuantityInCart(ItemId) {
+            var numcartitems = currentItems.CartItems.length;
+            for (var j = 0; j < numcartitems; j++) {
+                if (currentItems.CartItems[j].Id == ItemId) {
+                    return currentItems.CartItems[j].quantity;
+                }
+            }
+            return 0;
+        }
+        function showProduct(productItem, quantity) {
+            $("#productsDiv").append('<div class="col-sm-2">' +
+                '<div class="thumbnail text-center" >' +
+                '<a href="Product.html?Id=' + productItem.Number + '">' +
+                '<img src="/images/' + productItem.ImageUrl + '" alt="' + productItem.Name + '" style="width:200px;height:200px">' +
+                '<div class="caption">' +
+                '<p>' + productItem.Name + '</p>' +
+                '<p>$' + productItem.Price.toFixed(2) + '</p>' +
+                '<p>Quantity Ordered:' + quantity + '</p>' +
+                '</div></a></div></div >');
+        }
+        $(document).ready(function () {
+            //Checking Cart cookie
+            var currentItemsStr = $.cookie("cartItems");
+            if (null == currentItemsStr) {
+                currentItems = {
+                    "CartItems": []
+                }
+            }
+            else {
+                currentItems = $.parseJSON(currentItemsStr);
+            }
+            //Grabbing all products. Assuming we are short inventory site. In big inventory we would start with
+            //cart first and pull individual items.
+            $.getJSON("JSON/products.json", function (result) {
+                if (result.hasOwnProperty('Products')) {
+                    //Grabbing data from json file for all products
+                    for (var iter = 0; iter < result.Products.length; iter++) {
+                        //finding if product in the cart
+                        var quantity = itemQuantityInCart(result.Products[iter].Product.Number);
+                        if (quantity > 0) {
+                            showProduct(result.Products[iter].Product, quantity);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

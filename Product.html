@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/bootstrap-theme.min.css" rel="stylesheet" />
+</head>
+<body>
+    <nav class="breadcrumb">
+        <a class="breadcrumb-item" href="Index.html">Home</a>
+        <span class="breadcrumb-item active">Product</span>
+        <a class="breadcrumb-item" href="Cart.html">View Cart</a>
+    </nav>
+    <h1 class="bg-primary text-center">Monte's Sales portal for Struts</h1>
+    <p class="bg-danger text-center">This is just a test site. All the images are property of their owners.</p>
+    <h2 class="bg-info text-center">Product Details</h2>
+    <div class="text-center" id="productsDiv"></div>
+    <div class="text-center">
+        <button class="btn btn-primary" onclick="addToCart();">Add To Cart</button>
+    </div>
+    <script src="Scripts/jquery-3.1.1.min.js"></script>
+    <script src="Scripts/jquery.cookie.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        var currentID
+        $(document).ready(function () {
+            var currentUrl = window.location.href;
+            //Adhoc way of grabbing product ID from url
+            var querystring = currentUrl.split('?')[1];
+            if (querystring) {
+                var idvalue = querystring.split('=');
+                if (idvalue[0] == 'Id') {
+                    currentID = parseInt(idvalue[1]);
+                    $.getJSON("JSON/products.json", function (result) {
+                        if (result.hasOwnProperty('Products')) {
+                            for (var i = 0; i < result.Products.length; i++) {
+                                if (result.Products[i].Product.Number == currentID) {
+                                    $("#productsDiv").append('<div>' +
+                                        '<img src="/images/' + result.Products[i].Product.ImageUrl + '" alt="' + result.Products[i].Product.Name + '">' +
+                                        '<div class="caption">' +
+                                        '<p>' + result.Products[i].Product.Name + '</p>' +
+                                        '<p>$' + result.Products[i].Product.Price.toFixed(2) + '</p>' +
+                                        '</div></div >');
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        function addToCart()
+        {
+            var currentItemsStr = $.cookie("cartItems");
+            var currentItems;
+            if (null == currentItemsStr)
+            {
+                currentItems = {
+                    "CartItems" : []
+                }
+            }
+            else 
+            {
+                currentItems = $.parseJSON(currentItemsStr);
+            }
+            var found = false;
+            //finding if item already exist in the cart
+            for (var i = 0; i < currentItems.CartItems.length; i++)
+            {
+                if (currentItems.CartItems[i].Id == currentID)
+                {
+                    currentItems.CartItems[i].quantity++;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                var cartItem = {
+                    "Id": currentID,
+                    "quantity": 1
+                }
+                currentItems.CartItems.push(cartItem);
+            }
+            cookieStr = JSON.stringify(currentItems);
+            $.cookie("cartItems", cookieStr);
+            window.location.href = 'Cart.html';
+        }
+    </script>
+</body>
+</html>
